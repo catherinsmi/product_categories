@@ -1,0 +1,49 @@
+{{ template "head.html" . }}
+<body class="page page-feed">
+<main class="feed">
+  {{ if .Empty }}
+    <div class="empty">Пока нет опубликованных услуг</div>
+  {{ else }}
+    {{ with .Order }}
+    <div class="feed-card">
+      {{ if .VideoURL }}
+        <video class="feed-video" src="{{ .VideoURL }}" autoplay muted loop playsinline></video>
+      {{ else if .ImageURL }}
+        <img class="feed-video" src="{{ .ImageURL }}" alt="{{ .Title }}">
+      {{ end }}
+
+      <div class="feed-overlay">
+        <div class="feed-side">
+          <div class="feed-stat">
+            <span class="stat-value">{{ .PriceStr }}</span>
+            <span class="stat-label">Цена</span>
+          </div>
+          <div class="feed-stat">
+            <span class="stat-value stat-value--sm">Категория</span>
+            <span class="stat-label">Макияж</span>
+          </div>
+          <div class="feed-like">
+            {{ template "like_icon.html" .LikesCount }}
+          </div>
+        </div>
+
+        <div class="feed-bottom">
+          <div class="feed-desc">
+            <p class="feed-text">{{ .Description }}</p>
+            <a class="more-link" href="/grid">Больше</a>
+          </div>
+          <a class="next-btn" href="/feed/{{ .ID }}?next=true" aria-label="Следующий">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    {{ end }}
+  {{ end }}
+</main>
+
+{{ template "bottom_nav.html" . }}
+</body>
+</html>

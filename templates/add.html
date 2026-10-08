@@ -1,0 +1,75 @@
+{{ template "head.html" . }}
+<body class="page page-add">
+<main class="add">
+  <h1 class="page-title">Новая карточка</h1>
+
+  {{ if .HasDraft }}
+    {{ with .Order }}
+    <form class="add-form" method="get">
+
+      <div class="media-block">
+        <div class="media-dropzone">
+          {{ if .ImageURL }}
+            <img src="{{ .ImageURL }}" alt="preview image">
+          {{ else }}
+            <div class="dropzone-inner">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="9" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
+              </svg>
+              <span>Загрузить фото</span>
+            </div>
+          {{ end }}
+        </div>
+        <button type="button" class="solid-btn">Добавить фото</button>
+        <input class="field field--hidden" type="text" name="image_key" value="{{ .ImageKey }}">
+      </div>
+
+      <div class="media-block">
+        <div class="media-dropzone">
+          {{ if .VideoURL }}
+            <video src="{{ .VideoURL }}" muted loop playsinline></video>
+          {{ else }}
+            <div class="dropzone-inner">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="9" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
+              </svg>
+              <span>Загрузить видео</span>
+            </div>
+          {{ end }}
+        </div>
+        <button type="button" class="solid-btn">Добавить видео</button>
+        <input class="field field--hidden" type="text" name="video_key" value="{{ .VideoKey }}">
+      </div>
+
+      <label class="field-label" for="desc">Описание</label>
+      <textarea id="desc" class="field" name="description" placeholder="Краткое описание преимуществ...">{{ .Description }}</textarea>
+
+      <div class="field-row">
+        <div class="field-col">
+          <label class="field-label" for="price">Цена (₽)</label>
+          <input id="price" class="field" type="text" name="price" value="{{ .PriceStr }}" placeholder="...">
+        </div>
+        <div class="field-col">
+          <label class="field-label" for="cat">Категория</label>
+          <input id="cat" class="field" type="text" name="category" value="Макияж" placeholder="Макияж">
+        </div>
+      </div>
+
+      <input class="field field--hidden" type="text" name="title" value="{{ .Title }}">
+      <input class="field field--hidden" type="text" name="flight_date" value="{{ .FlightDate }}">
+
+      <button class="solid-btn solid-btn--submit" type="submit">Сохранить</button>
+    </form>
+    {{ end }}
+  {{ else }}
+    <div class="empty">Черновик не найден</div>
+  {{ end }}
+</main>
+
+{{ template "bottom_nav.html" . }}
+</body>
+</html>

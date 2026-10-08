@@ -1,0 +1,46 @@
+{{ template "head.html" . }}
+<body class="page page-grid">
+<main class="grid">
+  <form class="filter" method="get" action="/grid">
+    <p class="filter-title">Поиск по цене</p>
+    <div class="filter-row">
+      <div class="filter-col">
+        <label class="field-label" for="min">от</label>
+        <input id="min" class="field" type="number" name="min" value="{{ .Min }}" placeholder="0 ₽" inputmode="numeric">
+      </div>
+      <div class="filter-col">
+        <label class="field-label" for="max">до</label>
+        <input id="max" class="field" type="number" name="max" value="{{ .Max }}" placeholder="10 000 ₽" inputmode="numeric">
+      </div>
+      <button class="filter-btn" type="submit">Применить</button>
+    </div>
+  </form>
+
+  <div class="grid-list">
+    {{ range .Orders }}
+      <a class="grid-card" href="/feed/{{ .ID }}">
+        <div class="grid-image">
+          {{ if .ImageURL }}
+            <img src="{{ .ImageURL }}" alt="{{ .Title }}">
+          {{ end }}
+          <span class="grid-heart" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20s-6.5-4.1-8.7-7.3C1.5 10.2 2.6 6.9 5.6 6c1.8-.5 3.7.1 4.9 1.6L12 9.4l1.5-1.8c1.2-1.5 3.1-2.1 4.9-1.6 3 .9 4.1 4.2 2.3 6.7C18.5 15.9 12 20 12 20z"/>
+            </svg>
+          </span>
+        </div>
+        <div class="grid-body">
+          <p class="grid-caption">ТОНАЛЬНЫЙ CC-КРЕМ SPF10</p>
+          <p class="grid-title">{{ .Title }}</p>
+          <p class="grid-price">{{ .PriceStr }}</p>
+        </div>
+      </a>
+    {{ else }}
+      <div class="empty">Ничего не найдено</div>
+    {{ end }}
+  </div>
+</main>
+
+{{ template "bottom_nav.html" . }}
+</body>
+</html>

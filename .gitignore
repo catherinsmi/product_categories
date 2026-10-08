@@ -1,0 +1,5 @@
+/bin/
+/tmp/
+*.log
+product_categories
+cmd/product_categories/product_categories

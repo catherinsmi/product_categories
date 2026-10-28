@@ -1,36 +1,29 @@
 services:
-  minio:
-    image: quay.io/minio/aistor/minio:latest
-    container_name: metoda-minio
-    command: server /data --console-address ":9001"
+  postgres:
+    image: postgres:16
+    container_name: metoda-postgres
     environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: admin12345
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin12345
+      POSTGRES_DB: cosmetics
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "5432:5432"
     volumes:
-      - minio-data:/data
-      - ${HOME}/minio/minio.license:/minio.license:ro
+      - pg-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d cosmetics"]
       interval: 5s
       timeout: 5s
-      retries: 30
-      start_period: 10s
+      retries: 10
 
-  minio-init:
-    image: quay.io/minio/aistor/mc:latest
-    container_name: metoda-minio-init
+  adminer:
+    image: adminer:latest
+    container_name: metoda-adminer
+    ports:
+      - "8081:8080"
     depends_on:
-      minio:
+      postgres:
         condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 admin admin12345 &&
-      mc mb --ignore-existing local/metoda-media &&
-      echo 'bucket metoda-media ready'
-      "
 
 volumes:
-  minio-data:
+  pg-data:

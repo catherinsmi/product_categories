@@ -11,42 +11,51 @@ const (
 	StatusDeleted   Status = "deleted"
 )
 
-// Order — единственная модель-коллекция. Все поля скаляры (1НФ),
+// ProductCategories — единственная модель-коллекция. Все поля скаляры (1НФ),
 // кроме Likes — []int (ID пользователей), это разрешено ТЗ.
-type Order struct {
+type ProductCategories struct {
 	ID          int
 	Title       string
 	Description string
 	ImageKey    string
 	VideoKey    string
 	Price       float64
-	FlightDate  string
+	Category    string
 	Likes       []int
 	Status      Status
 }
 
-// ImageURL возвращает URL для /media/<key> или пустую строку.
-func (o Order) ImageURL() string {
+// ImageURL возвращает URL для /product_categories/media/<key> или пустую строку.
+func (o ProductCategories) ImageURL() string {
 	if o.ImageKey == "" {
 		return ""
 	}
-	return "/media/" + o.ImageKey
+	return "/product_categories/media/" + o.ImageKey
 }
 
-// VideoURL возвращает URL для /media/<key> или пустую строку.
-func (o Order) VideoURL() string {
+// VideoURL возвращает URL для /product_categories/media/<key> или пустую строку.
+func (o ProductCategories) VideoURL() string {
 	if o.VideoKey == "" {
 		return ""
 	}
-	return "/media/" + o.VideoKey
+	return "/product_categories/media/" + o.VideoKey
 }
 
 // LikesCount возвращает количество лайков (считает контроллер через модель, не шаблон).
-func (o Order) LikesCount() int {
+func (o ProductCategories) LikesCount() int {
 	return len(o.Likes)
 }
 
+// DeadlineStr — строковое представление даты рейса.
+
 // PriceStr — строковое представление цены без копеек.
-func (o Order) PriceStr() string {
+func (o ProductCategories) PriceStr() string {
 	return fmt.Sprintf("%.0f ₽", o.Price)
+}
+
+func (o ProductCategories) CategoryStr() string {
+	if o.Category == "" {
+		return "—"
+	}
+	return o.Category
 }

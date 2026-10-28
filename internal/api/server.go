@@ -12,39 +12,38 @@ import (
 	"product_categories/internal/storage"
 )
 
-// NewServer собирает роутер Gin со всеми страницами, статикой и прокси /media.
-func NewServer(repo *repository.Repository, st *storage.Storage, log *logrus.Logger) *gin.Engine {
+func NewServer(repo *repository.Repository, st *storage.Storage, log *logrus.Logger, fallbackDir string) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(loggerMiddleware(log))
 
-	// ВАЖНО: НЕ используем LoadHTMLGlob("templates/**/*.html") — Gin не поддерживает **.
-	// Один вызов LoadHTMLFiles со всеми файлами: партиалы + страницы.
-	// LoadHTMLFiles не перезаписывает ранее загруженные шаблоны.
 	r.LoadHTMLFiles(
 		"templates/partials/head.html",
 		"templates/partials/bottom_nav.html",
 		"templates/partials/like_icon.html",
-		"templates/feed.html",
-		"templates/add.html",
-		"templates/grid.html",
+		"templates/product_categories_feed.html",
+		"templates/product_categories_add.html",
+		"templates/product_categories_grid.html",
 	)
 
-	// Статика (CSS).
-	r.Static("/styles", "./resources/styles")
+	r.Static("/product_categories/styles", "./resources/styles")
 
-	h := handler.New(repo, st, log)
+	h := handler.New(repo, st, log, fallbackDir)
 
 	r.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusFound, "/feed")
+		c.Redirect(http.StatusFound, "/product_categories/feed")
 	})
-	r.GET("/feed", h.FeedIndex)
-	r.GET("/feed/:id", h.FeedByID)
-	r.GET("/add", h.Add)
-	r.GET("/grid", h.Grid)
-	r.GET("/media/*key", h.Media)
+
+	pc := r.Group("/product_categories")
+	{
+		pc.GET("/feed", h.FeedIndex)
+		pc.GET("/feed/:id", h.FeedByID)
+		pc.GET("/add", h.Add)
+		pc.GET("/grid", h.Grid)
+		pc.GET("/media/*key", h.Media)
+	}
 
 	return r
 }

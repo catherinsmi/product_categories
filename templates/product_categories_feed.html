@@ -19,8 +19,8 @@
             <span class="stat-label">Цена</span>
           </div>
           <div class="feed-stat">
+            <span class="stat-value stat-value--sm">{{ .CategoryStr }}</span>
             <span class="stat-value stat-value--sm">Категория</span>
-            <span class="stat-label">Макияж</span>
           </div>
           <div class="feed-like">
             {{ template "like_icon.html" .LikesCount }}
@@ -30,9 +30,9 @@
         <div class="feed-bottom">
           <div class="feed-desc">
             <p class="feed-text">{{ .Description }}</p>
-            <a class="more-link" href="/grid">Больше</a>
+            <a class="more-link" href="/product_categories/grid">Больше</a>
           </div>
-          <a class="next-btn" href="/feed/{{ .ID }}?next=true" aria-label="Следующий">
+          <a class="next-btn" href="/product_categories/feed/{{ .ID }}?next=true" aria-label="Следующий">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M6 9l6 6 6-6"/>
             </svg>

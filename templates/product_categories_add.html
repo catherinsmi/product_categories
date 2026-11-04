@@ -1,81 +1,102 @@
 {{ template "head.html" . }}
 <body class="page page-add">
 <main class="add">
-  <h1 class="page-title">Новая карточка</h1>
+  <h1 class="page-title">{{ if .HasDraft }}Публикация{{ else }}Новая карточка{{ end }}</h1>
 
   {{ if .HasDraft }}
     {{ with .Order }}
-    <form class="add-form" method="get">
-
-      <div class="add-media add-media--image"
-           {{ if .ImageURL }}style="background-image: url('{{ .ImageURL }}');"{{ end }}>
-        {{ if not .ImageURL }}
-          <div class="add-media-placeholder">
-            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <circle cx="8.5" cy="9" r="1.5"/>
-              <path d="M21 15l-5-5L5 21"/>
-            </svg>
-            <span>Нет изображения</span>
-          </div>
-        {{ end }}
+    <!-- ========================================== -->
+    <!-- ЧЕРНОВИК ЕСТЬ: поля заполнены + Опубликовать -->
+    <!-- ========================================== -->
+    <div class="add-form">
+      <div class="add-media add-media--image" style="background-image: url('{{ $.ImgURL }}');">
+        <!-- Картинка по умолчанию подставляется из handler'а (ImgURL) -->
       </div>
-
-      <label class="solid-btn" for="image-input">Добавить фото</label>
-      <input id="image-input" class="field--hidden" type="file"
-             name="image_file" accept="image/*">
 
       <div class="add-media add-media--video">
-        {{ if .VideoURL }}
-          <video src="{{ .VideoURL }}"
-                 {{ if .ImageURL }}poster="{{ .ImageURL }}"{{ end }}
-                 muted loop playsinline controls></video>
-        {{ else }}
-          <div class="add-media-placeholder">
-            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <circle cx="8.5" cy="9" r="1.5"/>
-              <path d="M21 15l-5-5L5 21"/>
-            </svg>
-            <span>Нет видео</span>
-          </div>
-        {{ end }}
+        <video src="{{ $.VidURL }}" poster="{{ $.ImgURL }}" muted loop playsinline controls></video>
       </div>
 
-      <label class="solid-btn" for="video-input">Добавить видео</label>
-      <input id="video-input" class="field--hidden" type="file"
-             name="video_file" accept="video/*">
-
       <label class="field-label" for="desc">Описание</label>
-      <textarea id="desc" class="field" name="description"
-                placeholder="Краткое описание преимуществ...">{{ .Description }}</textarea>
+      <textarea id="desc" class="field" name="description" disabled placeholder="Краткое описание преимуществ...">{{ .Description }}</textarea>
 
       <div class="field-row">
         <div class="field-col">
           <label class="field-label" for="price">Цена (₽)</label>
-          <input id="price" class="field" type="text" name="price"
-                 value="{{ .PriceStr }}" placeholder="...">
+          <input id="price" class="field" type="text" name="price" value="{{ .PriceStr }}" disabled>
+        </div>
+        <div class="field-col">
+          <label class="field-label" for="cat">Категория</label>
+          <input id="cat" class="field" type="text" value="{{ .CategoryStr }}" disabled>
+        </div>
+      </div>
+
+      <form method="post" action="/product_categories/publish" style="margin-top: 16px;">
+        <input type="hidden" name="id" value="{{ .ID }}">
+        <button class="solid-btn" type="submit">Опубликовать</button>
+      </form>
+    </div>
+    {{ end }}
+  {{ else }}
+    <!-- ========================================== -->
+    <!-- ЧЕРНОВИКА НЕТ: форма «Далее» с загрузкой    -->
+    <!-- ========================================== -->
+    <form class="add-form" method="post" action="/product_categories/add" enctype="multipart/form-data">
+      
+      <!-- Блок фото -->
+      <div class="add-media add-media--image">
+        <div class="add-media-placeholder">
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="9" r="1.5"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+          <span>Нет изображения</span>
+        </div>
+      </div>
+      
+      <label class="solid-btn" for="image-input">Добавить фото</label>
+      <input id="image-input" class="field--hidden" type="file" name="image_file" accept="image/*">
+
+      <!-- Блок видео -->
+      <div class="add-media add-media--video">
+        <div class="add-media-placeholder">
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="9" r="1.5"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+          <span>Нет видео</span>
+        </div>
+      </div>
+      
+      <label class="solid-btn" for="video-input">Добавить видео</label>
+      <input id="video-input" class="field--hidden" type="file" name="video_file" accept="video/*">
+
+      <!-- Текстовые поля -->
+      <label class="field-label" for="title">Название</label>
+      <input id="title" class="field" type="text" name="title" value="Новая карточка" placeholder="Введите название...">
+
+      <label class="field-label" for="desc">Описание</label>
+      <textarea id="desc" class="field" name="description" placeholder="Краткое описание преимуществ..."></textarea>
+
+      <div class="field-row">
+        <div class="field-col">
+          <label class="field-label" for="price">Цена (₽)</label>
+          <input id="price" class="field" type="number" name="price" value="1000" placeholder="0">
         </div>
         <div class="field-col">
           <label class="field-label" for="cat">Категория</label>
           <select id="cat" class="field" name="category">
-          
-
-  {{ range $.Categories }}
-    <option value="{{ . }}" {{ if eq (printf "%s" .) (printf "%s" $.Order.Category) }}selected{{ end }}>{{ . }}</option>
-  {{ end }}
-</select>
+            {{ range .Categories }}
+              <option value="{{ . }}">{{ . }}</option>
+            {{ end }}
+          </select>
         </div>
       </div>
 
-      <input class="field--hidden" type="text" name="image_key" value="{{ .ImageKey }}">
-      <input class="field--hidden" type="text" name="video_key" value="{{ .VideoKey }}">
-      <input class="field--hidden" type="text" name="title" value="{{ .Title }}">
-
+      <button class="solid-btn" type="submit" style="margin-top: 16px;">Далее</button>
     </form>
-    {{ end }}
-  {{ else }}
-    <div class="empty">Черновик не найден</div>
   {{ end }}
 </main>
 

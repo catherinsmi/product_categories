@@ -1,7 +1,6 @@
 package repository
 
-// Categories — фиксированный список категорий, доступных пользователю
-// при создании карточки. Порядок = порядок в селекте /add.
+// Categories — допустимые значения поля Category (поле по теме).
 var Categories = []string{
 	"Макияж",
 	"Уход за лицом",
@@ -11,7 +10,6 @@ var Categories = []string{
 	"Другое",
 }
 
-// IsValidCategory проверяет, что значение из формы входит в Categories.
 func IsValidCategory(c string) bool {
 	for _, x := range Categories {
 		if x == c {
@@ -20,3 +18,10 @@ func IsValidCategory(c string) bool {
 	}
 	return false
 }
+
+// Статусы услуг (строковые константы, совпадают с CHECK в БД).
+const (
+	StatusDraft     = "draft"
+	StatusPublished = "published"
+	StatusDeleted   = "deleted"
+)

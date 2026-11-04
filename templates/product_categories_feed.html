@@ -2,17 +2,21 @@
 <body class="page page-feed">
 <main class="feed">
   {{ if .Empty }}
-    <div class="empty">Пока нет опубликованных услуг</div>
+    <div class="empty" style="color: #fff; text-align: center; padding-top: 40vh;">
+      Пока нет опубликованных услуг
+    </div>
   {{ else }}
     {{ with .Order }}
     <div class="feed-card">
-      {{ if .VideoURL }}
-        <video class="feed-video" src="{{ .VideoURL }}" autoplay muted loop playsinline></video>
-      {{ else if .ImageURL }}
-        <img class="feed-video" src="{{ .ImageURL }}" alt="{{ .Title }}">
-      {{ end }}
+      
+{{ if .VideoURL }}
+  <video class="feed-video" src="{{ .VideoURL }}" autoplay muted loop playsinline></video>
+{{ else if .ImageURL }}
+  <img class="feed-video" src="{{ .ImageURL }}" alt="{{ .Title }}">
+{{ end }}
 
       <div class="feed-overlay">
+        <!-- Правый блок: поля по теме, лайк -->
         <div class="feed-side">
           <div class="feed-stat">
             <span class="stat-value">{{ .PriceStr }}</span>
@@ -20,18 +24,21 @@
           </div>
           <div class="feed-stat">
             <span class="stat-value stat-value--sm">{{ .CategoryStr }}</span>
-            <span class="stat-value stat-value--sm">Категория</span>
+            <span class="stat-label">Категория</span>
           </div>
           <div class="feed-like">
             {{ template "like_icon.html" .LikesCount }}
           </div>
         </div>
 
+        <!-- Нижний блок: описание, Больше, Следующий -->
         <div class="feed-bottom">
           <div class="feed-desc">
             <p class="feed-text">{{ .Description }}</p>
             <a class="more-link" href="/product_categories/grid">Больше</a>
           </div>
+          
+          <!-- Кнопка Следующий (передает текущий ID и next=true) -->
           <a class="next-btn" href="/product_categories/feed/{{ .ID }}?next=true" aria-label="Следующий">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M6 9l6 6 6-6"/>
@@ -39,6 +46,7 @@
           </a>
         </div>
       </div>
+      
     </div>
     {{ end }}
   {{ end }}

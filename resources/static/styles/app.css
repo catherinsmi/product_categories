@@ -644,3 +644,30 @@ input.field--hidden {
   background: rgba(255, 255, 255, 0.9);
   transform: scale(1.03);
 }
+.grid-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.delete-form {
+  margin: 0;
+}
+
+.btn-delete {
+  width: 100%;
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  color: #c0392b;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-delete:hover {
+  border-color: #c0392b;
+  background: #fdf2f2;
+}

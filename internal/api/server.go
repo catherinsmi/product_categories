@@ -9,49 +9,43 @@ import (
 
 	"product_categories/internal/app/handler"
 	"product_categories/internal/app/repository"
+	"product_categories/internal/storage"
 )
 
-// NewServer собирает Gin-роутер.
-// st *storage.Storage больше не нужен — MinIO убран, media отдаётся статикой.
-func NewServer(repo *repository.Repo, log *logrus.Logger, staticDir string) *gin.Engine {
+func NewServer(repo *repository.Repo, st *storage.Storage, log *logrus.Logger) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(loggerMiddleware(log))
+	r.Use(corsMiddleware()) // Добавим CORS для будущего SPA
 
-	// Gin не поддерживает ** в LoadHTMLGlob — перечисляем файлы явно.
-	r.LoadHTMLFiles(
-		"templates/partials/head.html",
-		"templates/partials/bottom_nav.html",
-		"templates/partials/like_icon.html",
-		"templates/product_categories_feed.html",
-		"templates/product_categories_add.html",
-		"templates/product_categories_grid.html",
-	)
+	// Инициализируем контроллеры
+	svcHandler := handler.NewServiceHandler(repo, st, log)
+	usrHandler := handler.NewUserHandler(repo, log)
 
-	// Статика: /static/* → resources/static/*
-	// Здесь лежат styles/app.css, media/*, default/*.
-	r.Static("/static", staticDir)
-
-	h := handler.New(repo, log, staticDir)
-
-	r.GET("/", func(c *gin.Context) {
-		c.Redirect(http.StatusFound, "/product_categories/feed")
-	})
-
-	pc := r.Group("/product_categories")
+	// Группируем API
+	api := r.Group("/api")
 	{
-		// ===== 3 GET =====
-		pc.GET("/feed", h.FeedFirst)    // первая published → редирект на /feed/:id
-		pc.GET("/feed/:id", h.FeedByID) // одна строка published (или ?next=true)
-		pc.GET("/add", h.Add)           // черновик текущего пользователя
-		pc.GET("/grid", h.Grid)         // список published + фильтр по цене
+		// === Домен: Услуги (Services) ===
+		services := api.Group("/services")
+		{
+			services.GET("", svcHandler.GetServices)         // Список с фильтром
+			services.GET("/feed", svcHandler.GetFeed)        // Лента
+			services.GET("/draft", svcHandler.GetDraft)      // Черновик
+			services.POST("", svcHandler.CreateService)      // Добавление (multipart)
+			services.PUT("/:id/publish", svcHandler.Publish) // Публикация
+			services.DELETE("/:id", svcHandler.Delete)       // Удаление (soft)
+			services.POST("/:id/like", svcHandler.Like)      // Лайк (0/1)
+		}
 
-		// ===== 3 POST =====
-		pc.POST("/add", h.CreateDraft) // «Далее» — создать draft (ORM)
-		pc.POST("/publish", h.Publish) // «Опубликовать» — draft→published (ORM)
-		pc.POST("/delete", h.Delete)   // логическое удаление (SQL UPDATE, не ORM)
+		// === Домен: Пользователи (Users) ===
+		users := api.Group("/users")
+		{
+			users.POST("/register", usrHandler.Register) // Регистрация
+			users.POST("/login", usrHandler.Login)       // Аутентификация (заглушка)
+			users.POST("/logout", usrHandler.Logout)     // Деавторизация (заглушка)
+		}
 	}
 
 	return r
@@ -66,6 +60,20 @@ func loggerMiddleware(log *logrus.Logger) gin.HandlerFunc {
 			"method":  c.Request.Method,
 			"path":    c.Request.URL.Path,
 			"elapsed": time.Since(start).String(),
-		}).Info("http")
+		}).Info("api")
+	}
+}
+
+// Заготовка для CORS (чтобы фронтенд с другого порта мог стучаться)
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+		c.Next()
 	}
 }

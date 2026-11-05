@@ -7,6 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// ============================================================
+// Инициализация
+// ============================================================
+
 type Repo struct {
 	db *gorm.DB
 }
@@ -19,7 +23,7 @@ func New(db *gorm.DB) *Repo {
 func (r *Repo) DB() *gorm.DB { return r.db }
 
 // ============================================================
-// 3 GET — чтение через ORM
+// Чтение (GET)
 // ============================================================
 
 // FeedByID — одна строка published.
@@ -93,7 +97,7 @@ func (r *Repo) Grid(min, max float64) ([]Service, error) {
 }
 
 // ============================================================
-// 2 POST через ORM
+// Изменение (POST/PUT/DELETE)
 // ============================================================
 
 // CreateDraft — «Далее»: создать черновик.
@@ -121,11 +125,7 @@ func (r *Repo) Publish(serviceID, creatorID uint) error {
 	return nil
 }
 
-// ============================================================
-// 1 POST — логическое удаление через сырой SQL UPDATE (не ORM)
-// ============================================================
-// «SQL курсор»: UPDATE ... RETURNING status через db.Raw().Scan().
-// ORM-методы Save/Updates/Delete здесь НЕ используются — требование лабы 2.
+// DeleteServiceSQL — published → deleted, строго через db.Raw (сырой SQL).
 func (r *Repo) DeleteServiceSQL(id uint) error {
 	var newStatus string
 	err := r.db.Raw(
@@ -139,4 +139,31 @@ func (r *Repo) DeleteServiceSQL(id uint) error {
 		return errors.New("service not found or not published")
 	}
 	return nil
+}
+
+// ============================================================
+// Лайки и Пользователи (Лабораторная №3)
+// ============================================================
+
+// AddLike — поставить лайк (если его еще нет)
+func (r *Repo) AddLike(userID, serviceID uint) error {
+	like := &Like{
+		UserID:    userID,
+		ServiceID: serviceID,
+		CreatedAt: time.Now(),
+	}
+	// FirstOrCreate ищет по условиям. Если не находит — создает.
+	return r.db.Where("user_id = ? AND service_id = ?", userID, serviceID).
+		FirstOrCreate(like).Error
+}
+
+// RemoveLike — убрать лайк
+func (r *Repo) RemoveLike(userID, serviceID uint) error {
+	return r.db.Where("user_id = ? AND service_id = ?", userID, serviceID).
+		Delete(&Like{}).Error
+}
+
+// CreateUser — регистрация нового пользователя
+func (r *Repo) CreateUser(user *User) error {
+	return r.db.Create(user).Error
 }
